@@ -1,0 +1,58 @@
+########################################
+# Unreal Engine 5 / C++ Project GitAttributes
+# 不使用 Git LFS 时使用
+########################################
+
+# ===== Source code (文本文件) =====
+*.cpp     text eol=lf
+*.h       text eol=lf
+*.cs      text eol=lf
+*.ini     text eol=lf
+*.txt     text eol=lf
+*.json    text eol=lf
+*.xml     text eol=lf
+*.md      text eol=lf
+
+# ===== UE5 binary assets =====
+# 标记二进制文件，Git 不会尝试 diff 或 merge
+*.uasset  binary
+*.umap    binary
+*_AutoSave.uasset binary
+*_Backup.uasset   binary
+
+# ===== Media files =====
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.tga  binary
+*.bmp  binary
+*.gif  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.fbx  binary
+*.obj  binary
+*.mtl  binary
+*.mp4  binary
+
+# ===== IDE / Editor files =====
+*.sln  text
+*.vcxproj text
+*.vcxproj.filters text
+*.xcodeproj text
+*.xcworkspace text
+
+# ===== Text merge settings =====
+# 对源码文件启用默认 merge
+*.cpp merge=union
+*.h   merge=union
+*.cs  merge=union
+*.ini merge=union
+
+# ===== Ignore CRLF issues for binary files =====
+*.uasset -text
+*.umap   -text
+*.png    -text
+*.jpg    -text
+*.fbx    -text
+*.wav    -text

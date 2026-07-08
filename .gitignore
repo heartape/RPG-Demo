@@ -1,0 +1,73 @@
+﻿
+########################################
+# Unreal Engine 5 / C++ Project GitIgnore
+########################################
+
+# ===== Generated binaries =====
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# ===== Project user settings =====
+# 本地开发者特定的配置文件，不需要提交
+*.uproject.user
+*.uproject.userprefs
+*.suo
+*.user
+*.useropts
+*.xcodeproj
+*.xcworkspace
+*.xcuserdata/
+*.vs/
+
+# ===== IDE & Editor settings =====
+.vs
+.vscode/
+.idea/
+.vsconfig
+.claude
+
+# ===== Logs & temporary files =====
+*.log
+*.log.*
+*.tmp
+*.bak
+*.swp
+
+# ===== Crash dumps =====
+crashdumps/
+
+# ===== Config files that are machine-specific (optional) =====
+# 注意: 如果团队协作，需要保留 Default*.ini 配置
+# 可以按团队约定选择性忽略
+# Config/DefaultEditor.ini
+# Config/DefaultGame.ini
+# Config/DefaultInput.ini
+
+# ===== Packaging & build artifacts =====
+# 打包生成文件和可执行文件不需要提交
+*.apk
+*.app
+*.exe
+*.dmg
+*.ipa
+*.pdb
+*.lib
+*.dll
+*.a
+*.appx
+*.appxbundle
+
+# ===== Node modules for plugins/tools =====
+node_modules/
+
+# ===== Ignore hidden system files =====
+.DS_Store
+Thumbs.db
+
+# ===== Fab Assets =====
+#Content/FreeAnimationsPack
+#Content/GameAnimationSample
+#Content/ThirdPerson
