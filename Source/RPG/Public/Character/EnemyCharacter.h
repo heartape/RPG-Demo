@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
+class APatrolPoint;
 class UBaseAttributeSet;
 
 UCLASS()
@@ -15,9 +16,13 @@ class RPG_API AEnemyCharacter : public ACharacter, public IAbilitySystemInterfac
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AEnemyCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	const TArray<TObjectPtr<APatrolPoint>>& GetPatrolPoints() const
+	{
+		return PatrolPoints;
+	}
 
 protected:
 
@@ -26,4 +31,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ability", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBaseAttributeSet> AttributeSet;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="AI|Patrol")
+	TArray<TObjectPtr<APatrolPoint>> PatrolPoints;
 };
