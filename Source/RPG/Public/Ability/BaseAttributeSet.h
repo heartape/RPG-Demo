@@ -22,6 +22,8 @@ class RPG_API UBaseAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
+	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	UPROPERTY(BlueprintReadOnly, Category="Attributes")
 	FGameplayAttributeData Health;
@@ -30,4 +32,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Attributes")
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UBaseAttributeSet, MaxHealth)
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes")
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(UBaseAttributeSet, Damage)
 };

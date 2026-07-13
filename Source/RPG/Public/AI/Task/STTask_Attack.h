@@ -1,34 +1,32 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "AI/Task/STTask_RPGBase.h"
-#include "STTask_Wait.generated.h"
+#include "STTask_Attack.generated.h"
 
 USTRUCT()
-struct FRPGWaitTaskInstanceData
+struct FRPGAttackInstanceData
 {
 	GENERATED_BODY()
 
-	/** 等待时间（秒） */
 	UPROPERTY(EditAnywhere, Category="Parameter")
-	float WaitTime = 2.f;
+	float TimeoutSeconds = 5.f;
 
-	/** 已等待时间 */
+	UPROPERTY()
+	bool bWasAttacking = false;
+
 	UPROPERTY()
 	float ElapsedTime = 0.f;
 };
 
-/**
- * 
- */
-USTRUCT(meta=(DisplayName="Wait"))
-struct RPG_API FSTTask_Wait : public FSTTask_RPGBase
+USTRUCT(meta=(DisplayName="Attack"))
+struct RPG_API FSTTask_Attack : public FSTTask_RPGBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FRPGWaitTaskInstanceData;
+	using FInstanceDataType = FRPGAttackInstanceData;
 
 	virtual const UStruct* GetInstanceDataType() const override
 	{

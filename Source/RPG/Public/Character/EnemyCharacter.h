@@ -9,6 +9,7 @@
 
 class APatrolPoint;
 class UBaseAttributeSet;
+class UGameplayAbility;
 
 UCLASS()
 class RPG_API AEnemyCharacter : public ACharacter, public IAbilitySystemInterface
@@ -18,11 +19,16 @@ class RPG_API AEnemyCharacter : public ACharacter, public IAbilitySystemInterfac
 public:
 	AEnemyCharacter();
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void BeginPlay() override;
 
 	const TArray<TObjectPtr<APatrolPoint>>& GetPatrolPoints() const
 	{
 		return PatrolPoints;
 	}
+
+	int32 GetPatrolIndex() const { return PatrolIndex; }
+	void SetPatrolIndex(int32 NewIndex) { PatrolIndex = NewIndex; }
+	void AdvancePatrolIndex();
 
 protected:
 
@@ -32,6 +38,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ability", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UBaseAttributeSet> AttributeSet;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability")
+	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
+
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="AI|Patrol")
 	TArray<TObjectPtr<APatrolPoint>> PatrolPoints;
+
+	UPROPERTY(BlueprintReadOnly, Category="AI|Patrol")
+	int32 PatrolIndex = 0;
 };

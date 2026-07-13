@@ -7,6 +7,7 @@
 #include "BaseAIController.generated.h"
 
 class UStateTreeAIComponent;
+class UStateTree;
 
 UCLASS()
 class RPG_API ABaseAIController : public AAIController
@@ -15,6 +16,10 @@ class RPG_API ABaseAIController : public AAIController
 
 public:
 	ABaseAIController();
+
+	UPROPERTY(EditDefaultsOnly, Category="AI")
+	TObjectPtr<UStateTree> StateTreeAsset;
+
 protected:
 
 	virtual void OnPossess(APawn* InPawn) override;

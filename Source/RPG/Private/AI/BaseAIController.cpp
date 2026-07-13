@@ -4,6 +4,7 @@
 #include "AI/BaseAIController.h"
 
 #include "Components/StateTreeAIComponent.h"
+#include "StateTree.h"
 
 
 ABaseAIController::ABaseAIController()
@@ -16,7 +17,16 @@ void ABaseAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	// 暂不启动 StateTree
+	if (StateTreeAIComponent && StateTreeAsset)
+	{
+		StateTreeAIComponent->SetStateTree(StateTreeAsset);
+		StateTreeAIComponent->StartLogic();
+		UE_LOG(LogTemp, Log, TEXT("BaseAIController: StateTree started for %s"), *InPawn->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BaseAIController: StateTreeAsset or Component missing for %s"), *InPawn->GetName());
+	}
 }
 
 void ABaseAIController::OnUnPossess()

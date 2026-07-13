@@ -1,34 +1,29 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "AI/Task/STTask_RPGBase.h"
-#include "STTask_Wait.generated.h"
+#include "STTask_MoveToPatrolPoint.generated.h"
 
 USTRUCT()
-struct FRPGWaitTaskInstanceData
+struct FRPGMoveToPatrolPointInstanceData
 {
 	GENERATED_BODY()
 
-	/** 等待时间（秒） */
 	UPROPERTY(EditAnywhere, Category="Parameter")
-	float WaitTime = 2.f;
+	float AcceptanceRadius = 50.f;
 
-	/** 已等待时间 */
 	UPROPERTY()
-	float ElapsedTime = 0.f;
+	bool bSawMoving = false;
 };
 
-/**
- * 
- */
-USTRUCT(meta=(DisplayName="Wait"))
-struct RPG_API FSTTask_Wait : public FSTTask_RPGBase
+USTRUCT(meta=(DisplayName="Move To Patrol Point"))
+struct RPG_API FSTTask_MoveToPatrolPoint : public FSTTask_RPGBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FRPGWaitTaskInstanceData;
+	using FInstanceDataType = FRPGMoveToPatrolPointInstanceData;
 
 	virtual const UStruct* GetInstanceDataType() const override
 	{
