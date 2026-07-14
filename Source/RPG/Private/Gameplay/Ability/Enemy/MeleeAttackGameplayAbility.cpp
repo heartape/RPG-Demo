@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Ability/MeleeAttackGameplayAbility.h"
+#include "Gameplay/Ability/Enemy/MeleeAttackGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
@@ -10,7 +10,6 @@
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/GameplayStatics.h"
 
 UMeleeAttackGameplayAbility::UMeleeAttackGameplayAbility()
 {

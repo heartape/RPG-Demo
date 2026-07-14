@@ -4,7 +4,7 @@
 #include "Character/EnemyCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "Ability/BaseAttributeSet.h"
+#include "Gameplay/BaseAttributeSet.h"
 #include "Abilities/GameplayAbility.h"
 
 

@@ -27,7 +27,8 @@ public class RPG : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 
-			"StructUtils"
+			"StructUtils",
+			"UMG"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
