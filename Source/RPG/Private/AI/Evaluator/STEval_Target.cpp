@@ -9,10 +9,11 @@
 
 void FSTEval_Target::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	auto& [DetectRadius, TargetActor, bHasTarget] = Context.GetInstanceData(*this);
+	auto& [DetectRadius, AttackRange, TargetActor, bHasTarget, bInAttackRange] = Context.GetInstanceData(*this);
 
 	TargetActor = nullptr;
 	bHasTarget = false;
+	bInAttackRange = false;
 
 	AAIController* AIC = Cast<AAIController>(Context.GetOwner());
 	AEnemyCharacter* Enemy = AIC ? Cast<AEnemyCharacter>(AIC->GetPawn()) : nullptr;
@@ -27,10 +28,15 @@ void FSTEval_Target::Tick(FStateTreeExecutionContext& Context, const float Delta
 		return;
 	}
 
-	float DistSq = FVector::DistSquared(Enemy->GetActorLocation(), PlayerPawn->GetActorLocation());
+	float DistSq = FVector::DistSquared2D(Enemy->GetActorLocation(), PlayerPawn->GetActorLocation());
 	if (DistSq <= DetectRadius * DetectRadius)
 	{
 		TargetActor = PlayerPawn;
 		bHasTarget = true;
+
+		if (DistSq <= AttackRange * AttackRange)
+		{
+			bInAttackRange = true;
+		}
 	}
 }

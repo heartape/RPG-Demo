@@ -14,11 +14,17 @@ struct FRPGTargetEvalInstanceData
 	UPROPERTY(EditAnywhere, Category="Parameter")
 	float DetectRadius = 800.f;
 
+	UPROPERTY(EditAnywhere, Category="Parameter")
+	float AttackRange = 120.f;
+
 	UPROPERTY(EditAnywhere, Category="Output")
 	AActor* TargetActor = nullptr;
 
 	UPROPERTY(EditAnywhere, Category="Output")
 	bool bHasTarget = false;
+
+	UPROPERTY(EditAnywhere, Category="Output")
+	bool bInAttackRange = false;
 };
 
 USTRUCT(meta=(DisplayName="Find Target"))
