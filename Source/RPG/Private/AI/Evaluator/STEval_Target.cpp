@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "StateTreeExecutionContext.h"
+#include "NavigationSystem.h"
 
 void FSTEval_Target::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
@@ -22,6 +23,27 @@ void FSTEval_Target::Tick(FStateTreeExecutionContext& Context, const float Delta
 		return;
 	}
 
+	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(Context.GetWorld());
+	if (!NavSys)
+	{
+		return;
+	}
+
+	FNavLocation EnemyProjected;
+	bool bEnemyOnNavMesh = NavSys->ProjectPointToNavigation(Enemy->GetActorLocation(), EnemyProjected, FVector(200.f));
+	if (!bEnemyOnNavMesh)
+	{
+		return;
+	}
+
+	if (EnemyProjected.Location != Enemy->GetActorLocation())
+	{
+		FVector CorrectedLocation = EnemyProjected.Location;
+		// 解决敌人陷入地面的问题
+		CorrectedLocation.Z = Enemy->GetActorLocation().Z;
+		Enemy->SetActorLocation(CorrectedLocation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(Context.GetWorld(), 0);
 	if (!PlayerPawn)
 	{
@@ -31,12 +53,18 @@ void FSTEval_Target::Tick(FStateTreeExecutionContext& Context, const float Delta
 	float DistSq = FVector::DistSquared2D(Enemy->GetActorLocation(), PlayerPawn->GetActorLocation());
 	if (DistSq <= DetectRadius * DetectRadius)
 	{
-		TargetActor = PlayerPawn;
-		bHasTarget = true;
+		FNavLocation PlayerProjected;
+		bool bPlayerOnNavMesh = NavSys->ProjectPointToNavigation(PlayerPawn->GetActorLocation(), PlayerProjected, FVector(200.f));
 
-		if (DistSq <= AttackRange * AttackRange)
+		if (bPlayerOnNavMesh)
 		{
-			bInAttackRange = true;
+			TargetActor = PlayerPawn;
+			bHasTarget = true;
+
+			if (DistSq <= AttackRange * AttackRange)
+			{
+				bInAttackRange = true;
+			}
 		}
 	}
 }

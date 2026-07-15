@@ -77,3 +77,16 @@ EStateTreeRunStatus FSTTask_Attack::Tick(
 
 	return EStateTreeRunStatus::Running;
 }
+
+void FSTTask_Attack::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	UAbilitySystemComponent* ASC = GetASC(Context);
+	if (!ASC)
+	{
+		return;
+	}
+
+	FGameplayTagContainer CancelTags;
+	CancelTags.AddTag(FRPGGameplayTags::Get().Ability_Attack_Melee);
+	ASC->CancelAbilities(&CancelTags);
+}

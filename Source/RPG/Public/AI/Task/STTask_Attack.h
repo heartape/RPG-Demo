@@ -40,4 +40,8 @@ struct RPG_API FSTTask_Attack : public FSTTask_RPGBase
 	virtual EStateTreeRunStatus Tick(
 		FStateTreeExecutionContext& Context,
 		const float DeltaTime) const override;
+
+	virtual void ExitState(
+		FStateTreeExecutionContext& Context,
+		const FStateTreeTransitionResult& Transition) const override;
 };
