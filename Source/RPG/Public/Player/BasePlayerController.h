@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Engine/TimerHandle.h"
 #include "BasePlayerController.generated.h"
 
 struct FGameplayTag;
 class UInputMappingContext;
 class UInputAction;
+class UPlayerStatusWidget;
 struct FInputActionValue;
 
 
@@ -21,9 +23,22 @@ class RPG_API ABasePlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void SetupInputComponent() override;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category="Gameplay|UI")
+	TSubclassOf<UPlayerStatusWidget> PlayerStatusWidgetClass;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UPlayerStatusWidget> PlayerStatusWidget;
+
+	FTimerHandle StatusWidgetRefreshTimer;
+
+	void CreatePlayerStatusWidget();
+	void RefreshPlayerStatusWidget();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Input|Movement")
 	TObjectPtr<UInputMappingContext> MovementInputMappingContext;
 
@@ -48,9 +63,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay|Input|Ability")
 	UInputAction* DashAction;
 
-	UPROPERTY(EditDefaultsOnly, Category="Gameplay|Input|Ability")
-	UInputAction* HealingAction;
-
 	void Jump();
 	void StopJumping();
 	void Move(const FInputActionValue& Value);
@@ -60,7 +72,6 @@ private:
 	void Charged();
 	void ChargedRelease();
 	void Dash();
-	void Healing();
 
 	// 以 GameplayEvent 激活由事件触发的能力（Combo / Charged / ChargedRelease / Dash）
 	void SendAbilityEvent(const FGameplayTag& GameplayTag) const;

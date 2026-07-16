@@ -23,6 +23,8 @@ public:
 	// 返回该 PlayerState 持有的 ASC
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	UPlayerAttributeSet* GetAttributeSet() const { return AttributeSet; }
+
 private:
 	// 该 PlayerState 拥有的 AbilitySystemComponent 实例
 	UPROPERTY(VisibleAnywhere, Category = "Crash|Ability")

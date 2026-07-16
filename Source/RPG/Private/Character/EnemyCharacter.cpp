@@ -23,7 +23,7 @@ AEnemyCharacter::AEnemyCharacter()
 	LifeBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("LifeBarComponent"));
 	LifeBarComponent->SetupAttachment(RootComponent);
 	LifeBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
-	LifeBarComponent->SetDrawSize(FVector2D(120.f, 20.f));
+	LifeBarComponent->SetDrawSize(FVector2D(120.f, 30.f));
 	LifeBarComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
 	LifeBarComponent->SetCastShadow(false);
 	LifeBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -55,9 +55,6 @@ void AEnemyCharacter::BeginPlay()
 		{
 			LifeBarWidget = Cast<UBaseLifeBar>(LifeBarComponent->GetUserWidgetObject());
 			check(LifeBarWidget);
-			// LifeBarComponent->SetWidget(LifeBarWidget);
-			// LifeBarComponent->InitWidget();
-			// LifeBarWidget->SetBarColor(LifeBarColor);
 			UpdateLifeBar();
 		}
 		

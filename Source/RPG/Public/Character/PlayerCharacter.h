@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
+#include "Engine/TimerHandle.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
+class UPlayerAttributeSet;
 class USpringArmComponent;
+struct FOnAttributeChangeData;
 
 /**
  * 玩家角色：仅承载平台跳跃相关机制（Dash / Combo / Charged 已剥离至 GAS 能力）。
@@ -32,6 +35,8 @@ public:
 	// 客户端：PlayerState 同步时初始化 ASC 的 Actor 信息
 	virtual void OnRep_PlayerState() override;
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	/** 处理跳跃按下输入，进入多段跳判定（可由控制器或 UI 调用） */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	virtual void DoJumpStart();
@@ -51,14 +56,20 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Platforming")
 	bool HasWallJumped() const;
 
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	bool IsDead() const { return bIsDead; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	float GetRespawnRemainingTime() const;
+
 protected:
+	virtual void BeginPlay() override;
+
 	// 落地：重置二段跳标记
 	virtual void Landed(const FHitResult& Hit) override;
 
 	// 移动模式变化：记录开始下落的时间用于土狼时间
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
-
-	// 清理定时器
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	// 执行多段跳判定（蹬墙跳 / 土狼时间 / 二段跳）
@@ -68,12 +79,39 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Platforming", meta = (DisplayName = "Set Jump Trail State"))
 	void SetJumpTrailState(bool bEnabled);
 
+	void InitializeAttributes(bool bResetCurrentValues);
+	void BindAttributeDelegates();
+	UPlayerAttributeSet* GetPlayerAttributeSet() const;
+	void OnHealthChanged(const FOnAttributeChangeData& Data);
+	void HandleDeath();
+	void Respawn();
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	TObjectPtr<UCameraComponent> FollowCamera;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="1"))
+	float DefaultMaxHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="0"))
+	float DefaultHealth = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="1"))
+	float DefaultMaxMana = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="0"))
+	float DefaultMana = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Combat", meta=(ClampMin="0"))
+	float RespawnDelay = 5.0f;
+
+	FTransform SpawnTransform;
+	FTimerHandle RespawnTimer;
+	float RespawnEndTime = 0.0f;
+	uint8 bIsDead : 1;
 
 	// ---- Platforming 状态 ----
 
@@ -82,8 +120,6 @@ private:
 
 	// 蹬墙跳输入锁重置定时器
 	FTimerHandle WallJumpTimer;
-
-	// ---- Wall Jump 配置 ----
 
 	UPROPERTY(EditAnywhere, Category = "Wall Jump", meta = (ClampMin = 0, ClampMax = 1000, Units = "cm"))
 	float WallJumpTraceDistance = 50.0f;

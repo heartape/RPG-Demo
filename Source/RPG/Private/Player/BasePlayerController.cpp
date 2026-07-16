@@ -8,8 +8,34 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "Gameplay/PlayerAttributeSet.h"
 #include "Gameplay/Ability.h"
 #include "Character/PlayerCharacter.h"
+#include "TimerManager.h"
+#include "UI/PlayerStatusWidget.h"
+
+void ABasePlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocalController())
+	{
+		CreatePlayerStatusWidget();
+		GetWorldTimerManager().SetTimer(
+			StatusWidgetRefreshTimer,
+			this,
+			&ABasePlayerController::RefreshPlayerStatusWidget,
+			0.1f,
+			true);
+		RefreshPlayerStatusWidget();
+	}
+}
+
+void ABasePlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(StatusWidgetRefreshTimer);
+	Super::EndPlay(EndPlayReason);
+}
 
 void ABasePlayerController::SetupInputComponent()
 {
@@ -32,8 +58,56 @@ void ABasePlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(ChargedAction, ETriggerEvent::Started, this, &ABasePlayerController::Charged);
 		EnhancedInputComponent->BindAction(ChargedAction, ETriggerEvent::Completed, this, &ABasePlayerController::ChargedRelease);
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &ABasePlayerController::Dash);
-		EnhancedInputComponent->BindAction(HealingAction, ETriggerEvent::Started, this, &ABasePlayerController::Healing);
 	}
+}
+
+void ABasePlayerController::CreatePlayerStatusWidget()
+{
+	if (PlayerStatusWidget || !IsLocalController())
+	{
+		return;
+	}
+
+	check(PlayerStatusWidgetClass)
+	PlayerStatusWidget = CreateWidget<UPlayerStatusWidget>(this, PlayerStatusWidgetClass);
+	if (PlayerStatusWidget)
+	{
+		PlayerStatusWidget->AddToViewport();
+	}
+}
+
+void ABasePlayerController::RefreshPlayerStatusWidget()
+{
+	if (!PlayerStatusWidget)
+	{
+		CreatePlayerStatusWidget();
+	}
+
+	if (!PlayerStatusWidget)
+	{
+		return;
+	}
+
+	float Health = 0.0f;
+	float MaxHealth = 0.0f;
+	float Mana = 0.0f;
+	float MaxMana = 0.0f;
+
+	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn()))
+	{
+		if (const UPlayerAttributeSet* AttributeSet = AbilitySystemComponent->GetSet<UPlayerAttributeSet>())
+		{
+			Health = AttributeSet->GetHealth();
+			MaxHealth = AttributeSet->GetMaxHealth();
+			Mana = AttributeSet->GetMana();
+			MaxMana = AttributeSet->GetMaxMana();
+		}
+	}
+
+	PlayerStatusWidget->SetAttributeValues(Health, MaxHealth, Mana, MaxMana);
+
+	const APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	PlayerStatusWidget->SetRespawnCountdown(PlayerCharacter ? PlayerCharacter->GetRespawnRemainingTime() : 0.0f);
 }
 
 void ABasePlayerController::Jump()
@@ -109,11 +183,6 @@ void ABasePlayerController::ChargedRelease()
 void ABasePlayerController::Dash()
 {
 	SendAbilityEvent(Ability::Dash);
-}
-
-void ABasePlayerController::Healing()
-{
-	ActivateAbility(Ability::Healing);
 }
 
 void ABasePlayerController::SendAbilityEvent(const FGameplayTag& GameplayTag) const

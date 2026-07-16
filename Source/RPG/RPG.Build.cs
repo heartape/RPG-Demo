@@ -33,7 +33,9 @@ public class RPG : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"GameplayDebugger"
+			"GameplayDebugger",
+			"Slate",
+			"SlateCore"
 		});
 
 		// Uncomment if you are using Slate UI
