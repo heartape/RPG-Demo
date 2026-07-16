@@ -6,6 +6,9 @@
 #include "AbilitySystemComponent.h"
 #include "Gameplay/BaseAttributeSet.h"
 #include "Abilities/GameplayAbility.h"
+#include "Components/WidgetComponent.h"
+#include "UI/BaseLifeBar.h"
+#include "GameplayEffectTypes.h"
 
 
 AEnemyCharacter::AEnemyCharacter()
@@ -16,6 +19,14 @@ AEnemyCharacter::AEnemyCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 	AttributeSet =CreateDefaultSubobject<UBaseAttributeSet>(TEXT("AttributeSet"));
+
+	LifeBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("LifeBarComponent"));
+	LifeBarComponent->SetupAttachment(RootComponent);
+	LifeBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	LifeBarComponent->SetDrawSize(FVector2D(120.f, 20.f));
+	LifeBarComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
+	LifeBarComponent->SetCastShadow(false);
+	LifeBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 UAbilitySystemComponent* AEnemyCharacter::GetAbilitySystemComponent() const
@@ -31,6 +42,25 @@ void AEnemyCharacter::BeginPlay()
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(this, this);
 
+		if (AttributeSet)
+		{
+			AttributeSet->InitMaxHealth(DefaultMaxHealth);
+			AttributeSet->InitHealth(FMath::Clamp(DefaultHealth, 0.f, DefaultMaxHealth));
+
+			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetHealthAttribute()).AddUObject(this, &AEnemyCharacter::OnHealthChanged);
+			AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetMaxHealthAttribute()).AddUObject(this, &AEnemyCharacter::OnMaxHealthChanged);
+		}
+		
+		if (LifeBarComponent)
+		{
+			LifeBarWidget = Cast<UBaseLifeBar>(LifeBarComponent->GetUserWidgetObject());
+			check(LifeBarWidget);
+			// LifeBarComponent->SetWidget(LifeBarWidget);
+			// LifeBarComponent->InitWidget();
+			// LifeBarWidget->SetBarColor(LifeBarColor);
+			UpdateLifeBar();
+		}
+		
 		for (const TSubclassOf<UGameplayAbility>& AbilityClass : DefaultAbilities)
 		{
 			if (AbilityClass)
@@ -59,4 +89,25 @@ void AEnemyCharacter::AdvancePatrolIndex()
 	}
 
 	PatrolIndex = (PatrolIndex + 1) % PatrolPoints.Num();
+}
+
+void AEnemyCharacter::UpdateLifeBar() const
+{
+	check(LifeBarWidget)
+	check(AttributeSet)
+
+	const float MaxHealth = AttributeSet->GetMaxHealth();
+	const float Health = AttributeSet->GetHealth();
+	const float Percent = MaxHealth > 0.f ? Health / MaxHealth : 0.f;
+	LifeBarWidget->SetLifePercentage(Percent);
+}
+
+void AEnemyCharacter::OnHealthChanged(const FOnAttributeChangeData& Data) const
+{
+	UpdateLifeBar();
+}
+
+void AEnemyCharacter::OnMaxHealthChanged(const FOnAttributeChangeData& Data) const
+{
+	UpdateLifeBar();
 }

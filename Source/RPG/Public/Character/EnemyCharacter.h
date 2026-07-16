@@ -9,12 +9,19 @@
 
 class APatrolPoint;
 class UBaseAttributeSet;
+class UBaseLifeBar;
+class UWidgetComponent;
 class UGameplayAbility;
+
+struct FOnAttributeChangeData;
 
 UCLASS()
 class RPG_API AEnemyCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta=(AllowPrivateAccess=true))
+	TObjectPtr<UWidgetComponent> LifeBarComponent;
 
 public:
 	AEnemyCharacter();
@@ -29,6 +36,28 @@ public:
 	int32 GetPatrolIndex() const { return PatrolIndex; }
 	void SetPatrolIndex(int32 NewIndex) { PatrolIndex = NewIndex; }
 	void AdvancePatrolIndex();
+
+	UFUNCTION(BlueprintCallable, Category="Life Bar")
+	void UpdateLifeBar() const;
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Life Bar")
+	FLinearColor LifeBarColor = FLinearColor::Red;
+
+	UPROPERTY(EditAnywhere, Category="Life Bar")
+	TObjectPtr<UBaseLifeBar> LifeBarWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes", meta=(ClampMin="1"))
+	float DefaultMaxHealth = 100.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attributes", meta=(ClampMin="0"))
+	float DefaultHealth = 100.f;
+
+private:
+
+	void OnHealthChanged(const FOnAttributeChangeData& Data) const;
+	void OnMaxHealthChanged(const FOnAttributeChangeData& Data) const;
 
 protected:
 
