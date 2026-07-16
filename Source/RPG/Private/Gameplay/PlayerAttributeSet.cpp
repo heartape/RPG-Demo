@@ -17,6 +17,10 @@ UPlayerAttributeSet::UPlayerAttributeSet()
 	InitMaxHealth(100.f);
 	InitMana(50.f);
 	InitMaxMana(50.f);
+	InitStamina(100.f);
+	InitMaxStamina(100.f);
+	InitShield(0.f);
+	InitMaxShield(100.f);
 }
 
 void UPlayerAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -27,6 +31,10 @@ void UPlayerAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UPlayerAttributeSet, MaxHealth);
 	DOREPLIFETIME(UPlayerAttributeSet, Mana);
 	DOREPLIFETIME(UPlayerAttributeSet, MaxMana);
+	DOREPLIFETIME(UPlayerAttributeSet, Stamina);
+	DOREPLIFETIME(UPlayerAttributeSet, MaxStamina);
+	DOREPLIFETIME(UPlayerAttributeSet, Shield);
+	DOREPLIFETIME(UPlayerAttributeSet, MaxShield);
 }
 
 void UPlayerAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -40,6 +48,14 @@ void UPlayerAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute
 	else if (Attribute == GetManaAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxMana());
+	}
+	else if (Attribute == GetStaminaAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());
+	}
+	else if (Attribute == GetShieldAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxShield());
 	}
 }
 
@@ -59,6 +75,20 @@ void UPlayerAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
 		Data.EvaluatedData.Attribute == GetMaxManaAttribute())
 	{
 		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	}
+
+	// Stamina 钳制到 [0, MaxStamina]
+	if (Data.EvaluatedData.Attribute == GetStaminaAttribute() ||
+		Data.EvaluatedData.Attribute == GetMaxStaminaAttribute())
+	{
+		SetStamina(FMath::Clamp(GetStamina(), 0.f, GetMaxStamina()));
+	}
+
+	// Shield 钳制到 [0, MaxShield]
+	if (Data.EvaluatedData.Attribute == GetShieldAttribute() ||
+		Data.EvaluatedData.Attribute == GetMaxShieldAttribute())
+	{
+		SetShield(FMath::Clamp(GetShield(), 0.f, GetMaxShield()));
 	}
 }
 
@@ -90,6 +120,34 @@ FGameplayAttribute UPlayerAttributeSet::GetMaxManaAttribute()
 	return Attribute;
 }
 
+FGameplayAttribute UPlayerAttributeSet::GetStaminaAttribute()
+{
+	static FGameplayAttribute Attribute(
+		FindFProperty<FStructProperty>(UPlayerAttributeSet::StaticClass(), "Stamina"));
+	return Attribute;
+}
+
+FGameplayAttribute UPlayerAttributeSet::GetMaxStaminaAttribute()
+{
+	static FGameplayAttribute Attribute(
+		FindFProperty<FStructProperty>(UPlayerAttributeSet::StaticClass(), "MaxStamina"));
+	return Attribute;
+}
+
+FGameplayAttribute UPlayerAttributeSet::GetShieldAttribute()
+{
+	static FGameplayAttribute Attribute(
+		FindFProperty<FStructProperty>(UPlayerAttributeSet::StaticClass(), "Shield"));
+	return Attribute;
+}
+
+FGameplayAttribute UPlayerAttributeSet::GetMaxShieldAttribute()
+{
+	static FGameplayAttribute Attribute(
+		FindFProperty<FStructProperty>(UPlayerAttributeSet::StaticClass(), "MaxShield"));
+	return Attribute;
+}
+
 void UPlayerAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, Health, OldHealth);
@@ -108,4 +166,24 @@ void UPlayerAttributeSet::OnRep_Mana(const FGameplayAttributeData& OldMana) cons
 void UPlayerAttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, MaxMana, OldMaxMana);
+}
+
+void UPlayerAttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldStamina) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, Stamina, OldStamina);
+}
+
+void UPlayerAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, MaxStamina, OldMaxStamina);
+}
+
+void UPlayerAttributeSet::OnRep_Shield(const FGameplayAttributeData& OldShield) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, Shield, OldShield);
+}
+
+void UPlayerAttributeSet::OnRep_MaxShield(const FGameplayAttributeData& OldMaxShield) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UPlayerAttributeSet, MaxShield, OldMaxShield);
 }

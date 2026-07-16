@@ -28,6 +28,7 @@ Saved/
 .idea/
 .vsconfig
 .claude
+.opencode
 
 # ===== Logs & temporary files =====
 *.log

@@ -5,14 +5,14 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Character/PlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
-#include "Gameplay/PlayerAttributeSet.h"
 #include "Gameplay/Ability.h"
-#include "Character/PlayerCharacter.h"
+#include "Gameplay/PlayerAttributeSet.h"
 #include "TimerManager.h"
-#include "UI/PlayerStatusWidget.h"
+#include "UI/HUD/GameHUD.h"
 
 void ABasePlayerController::BeginPlay()
 {
@@ -20,20 +20,25 @@ void ABasePlayerController::BeginPlay()
 
 	if (IsLocalController())
 	{
-		CreatePlayerStatusWidget();
-		GetWorldTimerManager().SetTimer(
-			StatusWidgetRefreshTimer,
-			this,
-			&ABasePlayerController::RefreshPlayerStatusWidget,
-			0.1f,
-			true);
-		RefreshPlayerStatusWidget();
+		CreateGameHUD();
+		TryBindGameHUD();
+	}
+}
+
+void ABasePlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (IsLocalController())
+	{
+		// Possess 后 Pawn 已就位；若 BeginPlay 阶段未能绑定到 ASC，这里再触发一次
+		GetWorldTimerManager().SetTimerForNextTick(this, &ABasePlayerController::TryBindGameHUD);
 	}
 }
 
 void ABasePlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	GetWorldTimerManager().ClearTimer(StatusWidgetRefreshTimer);
+	GetWorldTimerManager().ClearTimer(HUDBindRetryTimer);
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -61,53 +66,50 @@ void ABasePlayerController::SetupInputComponent()
 	}
 }
 
-void ABasePlayerController::CreatePlayerStatusWidget()
+void ABasePlayerController::CreateGameHUD()
 {
-	if (PlayerStatusWidget || !IsLocalController())
+	if (GameHUD || !IsLocalController())
 	{
 		return;
 	}
 
-	check(PlayerStatusWidgetClass)
-	PlayerStatusWidget = CreateWidget<UPlayerStatusWidget>(this, PlayerStatusWidgetClass);
-	if (PlayerStatusWidget)
+	check(GameHUDClass)
+	GameHUD = CreateWidget<UGameHUD>(this, GameHUDClass);
+	if (GameHUD)
 	{
-		PlayerStatusWidget->AddToViewport();
+		GameHUD->AddToViewport();
 	}
 }
 
-void ABasePlayerController::RefreshPlayerStatusWidget()
+void ABasePlayerController::BindGameHUDToOwner()
 {
-	if (!PlayerStatusWidget)
-	{
-		CreatePlayerStatusWidget();
-	}
-
-	if (!PlayerStatusWidget)
+	if (!GameHUD)
 	{
 		return;
 	}
 
-	float Health = 0.0f;
-	float MaxHealth = 0.0f;
-	float Mana = 0.0f;
-	float MaxMana = 0.0f;
-
-	if (UAbilitySystemComponent* AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn()))
+	if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn()))
 	{
-		if (const UPlayerAttributeSet* AttributeSet = AbilitySystemComponent->GetSet<UPlayerAttributeSet>())
-		{
-			Health = AttributeSet->GetHealth();
-			MaxHealth = AttributeSet->GetMaxHealth();
-			Mana = AttributeSet->GetMana();
-			MaxMana = AttributeSet->GetMaxMana();
-		}
+		// GameHUD 内部会等待 ASC 就绪并转发到所有子 Widget
+		GameHUD->BindToOwner(PlayerCharacter);
+	}
+}
+
+void ABasePlayerController::TryBindGameHUD()
+{
+	if (!GameHUD)
+	{
+		CreateGameHUD();
 	}
 
-	PlayerStatusWidget->SetAttributeValues(Health, MaxHealth, Mana, MaxMana);
+	if (!GameHUD || !GetPawn())
+	{
+		// Pawn 未就位：稍后重试
+		GetWorldTimerManager().SetTimer(HUDBindRetryTimer, this, &ABasePlayerController::TryBindGameHUD, 0.1f, false);
+		return;
+	}
 
-	const APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-	PlayerStatusWidget->SetRespawnCountdown(PlayerCharacter ? PlayerCharacter->GetRespawnRemainingTime() : 0.0f);
+	BindGameHUDToOwner();
 }
 
 void ABasePlayerController::Jump()

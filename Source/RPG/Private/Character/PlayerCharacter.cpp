@@ -281,19 +281,32 @@ void APlayerCharacter::InitializeAttributes(bool bResetCurrentValues)
 
 	const float MaxHealth = FMath::Max(1.0f, DefaultMaxHealth);
 	const float MaxMana = FMath::Max(1.0f, DefaultMaxMana);
+	const float MaxStamina = FMath::Max(1.0f, DefaultMaxStamina);
+	const float MaxShield = FMath::Max(1.0f, DefaultMaxShield);
 	AttributeSet->InitMaxHealth(MaxHealth);
 	AttributeSet->InitMaxMana(MaxMana);
+	AttributeSet->InitMaxStamina(MaxStamina);
+	AttributeSet->InitMaxShield(MaxShield);
 
 	if (bResetCurrentValues)
 	{
 		AttributeSet->InitHealth(FMath::Clamp(DefaultHealth, 0.0f, MaxHealth));
 		AttributeSet->InitMana(FMath::Clamp(DefaultMana, 0.0f, MaxMana));
+		AttributeSet->InitStamina(FMath::Clamp(DefaultStamina, 0.0f, MaxStamina));
+		AttributeSet->InitShield(FMath::Clamp(DefaultShield, 0.0f, MaxShield));
 	}
 	else
 	{
 		AttributeSet->SetHealth(FMath::Clamp(AttributeSet->GetHealth(), 0.0f, MaxHealth));
 		AttributeSet->SetMana(FMath::Clamp(AttributeSet->GetMana(), 0.0f, MaxMana));
+		AttributeSet->SetStamina(FMath::Clamp(AttributeSet->GetStamina(), 0.0f, MaxStamina));
+		AttributeSet->SetShield(FMath::Clamp(AttributeSet->GetShield(), 0.0f, MaxShield));
 	}
+}
+
+void APlayerCharacter::SetCurrentTarget(AActor* InTarget)
+{
+	CurrentTarget = InTarget;
 }
 
 void APlayerCharacter::BindAttributeDelegates()

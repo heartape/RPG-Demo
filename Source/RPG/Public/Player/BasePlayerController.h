@@ -10,12 +10,13 @@
 struct FGameplayTag;
 class UInputMappingContext;
 class UInputAction;
-class UPlayerStatusWidget;
+class UGameHUD;
+class APlayerCharacter;
 struct FInputActionValue;
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class RPG_API ABasePlayerController : public APlayerController
@@ -26,18 +27,21 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay|UI")
-	TSubclassOf<UPlayerStatusWidget> PlayerStatusWidgetClass;
+	TSubclassOf<UGameHUD> GameHUDClass;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UPlayerStatusWidget> PlayerStatusWidget;
+	TObjectPtr<UGameHUD> GameHUD;
 
-	FTimerHandle StatusWidgetRefreshTimer;
+	// 在 Pawn 就位 / ASC 就绪期间重试绑定 GameHUD 的定时器
+	FTimerHandle HUDBindRetryTimer;
 
-	void CreatePlayerStatusWidget();
-	void RefreshPlayerStatusWidget();
+	void CreateGameHUD();
+	void BindGameHUDToOwner();
+	void TryBindGameHUD();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Input|Movement")
 	TObjectPtr<UInputMappingContext> MovementInputMappingContext;

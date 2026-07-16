@@ -62,6 +62,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	float GetRespawnRemainingTime() const;
 
+	// 目标锁定：当前选中的敌方 Actor（由蓝图 / 输入逻辑写入），HUD 据此显示 TargetFrame
+	UFUNCTION(BlueprintCallable, Category = "Targeting")
+	void SetCurrentTarget(AActor* InTarget);
+
+	UFUNCTION(BlueprintPure, Category = "Targeting")
+	AActor* GetCurrentTarget() const { return CurrentTarget.Get(); }
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -104,6 +111,22 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="0"))
 	float DefaultMana = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="1"))
+	float DefaultMaxStamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="0"))
+	float DefaultStamina = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="1"))
+	float DefaultMaxShield = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Attributes", meta=(ClampMin="0"))
+	float DefaultShield = 0.0f;
+
+	// 当前锁定的目标 Actor（弱引用：避免 HUD 持有强引用导致目标销毁时悬挂）
+	UPROPERTY(VisibleAnywhere, Transient, Category="Targeting")
+	TWeakObjectPtr<AActor> CurrentTarget;
 
 	UPROPERTY(EditDefaultsOnly, Category="Combat", meta=(ClampMin="0"))
 	float RespawnDelay = 5.0f;
